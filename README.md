@@ -47,8 +47,8 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/config/kavita` - Data storage
-- `./rootfs/data/kavita` - Data storage
+- `./volumes/config/kavita` - Data storage
+- `./volumes/data/kavita` - Data storage
 
 ## 🔍 Logging
 
