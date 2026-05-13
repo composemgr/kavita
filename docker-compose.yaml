@@ -16,12 +16,16 @@ services:
     logging: *default-logging
     networks:
       - kavita
+      - proxy
+      - cloudflare
     ports:
       - "172.17.0.1:5000:5000"
     environment:
       TZ: ${TZ:-America/New_York}
       PUID: ${SERVICE_USER:-1000}
       PGID: ${SERVICE_GROUP:-1000}
+      CONTAINER_NAME: kavita-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     volumes:
       - ./volumes/config/kavita:/config
       - ./volumes/data/kavita:/data
@@ -30,8 +34,28 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://kavita-app:5000'
+      - 'cloudflare.hostname=kavita.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.kavita-app.entrypoints=http'
+      - 'traefik.http.routers.kavita-app-secure.tls=true'
+      - 'traefik.http.routers.kavita-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.kavita-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.kavita-app.middlewares=kavita-app-https-redirect'
+      - 'traefik.http.routers.kavita-app-secure.entrypoints=https'
+      - 'traefik.http.routers.kavita-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.kavita-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.kavita-app-secure.service=kavita-app'
+      - 'traefik.http.services.kavita-app.loadbalancer.server.port=5000'
 
 networks:
   kavita:
     name: kavita
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
