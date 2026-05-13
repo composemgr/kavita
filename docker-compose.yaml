@@ -1,5 +1,6 @@
 # nginx proxy address - http://172.17.0.1:5000
 
+name: kavita
 x-logging: &default-logging
   driver: json-file
   options:
@@ -8,14 +9,15 @@ x-logging: &default-logging
 
 services:
   kavita:
-    image: kizaing/kavita:latest
+    image: jvmilazz0/kavita:latest
+    pull_policy: always
     container_name: kavita-app
-    restart: unless-stopped
+    restart: always
     logging: *default-logging
     networks:
       - kavita
     ports:
-      - "5000:5000"
+      - "172.17.0.1:5000:5000"
     environment:
       TZ: ${TZ:-America/New_York}
       PUID: ${SERVICE_USER:-1000}
@@ -31,4 +33,5 @@ services:
 
 networks:
   kavita:
+    name: kavita
     external: false
